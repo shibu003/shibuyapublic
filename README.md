@@ -143,46 +143,6 @@ sat in `WAITING` on a MERGE gate rather than finishing itself.
 
 ---
 
-## Critical path
-
-Everything above is either implemented or explicitly scoped out. What stands between this and being
-real is a short, **ordered** chain — each link is blocked by the one before it.
-
-**1. One real agent through the facade.** ← *we are here*
-The default runtime is a fake. Until a real coding agent runs a real step through `dispatch()` and
-has its outputs contract-checked, every guarantee on this page is a guarantee about a simulation.
-The hard part is not spawning the agent — it is the **output boundary**. The product has to observe
-the artifacts and change sets itself (files on disk, commits on a branch) instead of accepting a
-list the agent hands back. *An agent that can name its own outputs can name outputs it never
-produced* — and the contract check collapses straight back into pain #2.
-
-**2. Verification that executes, not verification that checks presence.**
-Today a verification step passes when the declared evidence artifact was **registered**. That proves
-the evidence *exists* — not that it *says pass*. Real verification has to run the repository's own
-check and record its result as the evidence. Until then, "no required verification is pending" is a
-weaker sentence than it reads, and pain #2 survives one level further down.
-
-**3. The scope decision on execution surface.**
-`authorize()` is product-owned and enforced outside the agent, but the only surface it enforces
-today is git branch and write paths. A real agent wants general command execution, and at that
-moment code-level containment stops being sufficient — an OS-level boundary is required. Two honest
-options: keep the surface deliberately narrow, or take on a sandbox. "Neither, but claim both" is
-where security theatre starts. This decision bounds how far 1 is allowed to go.
-
-**4. Gates that show what they are gating.**
-A human approving a MERGE gate today sees a gate id, not a diff. Approval without evidence in front
-of it is a rubber stamp — which re-creates the original pain one layer up, at the human. Gates have
-to render the change they are holding.
-
-**Not on the path, but next:** concurrency. One step executes at a time. Parallel agents are the
-point of the word *workspace*, and nothing in the model prevents it — but that is throughput work,
-not validity work, and it can wait.
-
-The order is load-bearing: **2 is worthless before 1, and 4 is cosmetic before 2.** If exactly one
-of these ships, it is 1 — it is the only one that can still falsify the design.
-
----
-
 ## Honest scope
 
 This is a **bootstrap-stage vertical slice** (2026-08), not a product. Specifically:
@@ -199,6 +159,9 @@ This is a **bootstrap-stage vertical slice** (2026-08), not a product. Specifica
 * `eng` is **not** a coding agent, an IDE, or a model wrapper. It makes no model calls of its own.
 
 If a claim isn't in this list, assume it isn't implemented yet.
+
+What is missing, and in what order it has to change:
+**[CRITICAL-PATH.md](CRITICAL-PATH.md)**.
 
 ---
 
@@ -223,16 +186,9 @@ If a claim isn't in this list, assume it isn't implemented yet.
 4. **状態は永続、不明は不明のまま**。daemon が状態を持ち CLI は持たない。Ctrl-C しても run は生きる。
    再起動時の実行中 step は `UNKNOWN_OUTCOME` として**自動再試行しない**。human gate に時間切れ承認は存在しない。
 
-**クリティカルパス（順序が本質）** — 1. **実エージェントを facade の向こうに 1 本通す**（現在地。難所は出力境界 —
-成果物はエージェントの申告ではなくプロダクト自身が観測しなければ、自分の成果物を自分で名乗れてしまう）→
-2. **検証を「存在確認」から「実行」へ**（今は宣言した証拠が登録済みなら通る。中身が pass かは見ていない）→
-3. **実行面のスコープ判断**（今の強制対象は git のブランチと書き込みパスのみ。汎用コマンド実行を許した瞬間に
-code-level では足りず OS 境界が要る。狭いまま行くか、サンドボックスを背負うか。「両方主張する」はセキュリティ演劇）→
-4. **gate が中身を見せる**（今は gate id しか見えない。差分の見えない承認は形骸化で、痛み #2 が人間の層で再発する）。
-並列実行は経路上ではなく次の話（正しさではなくスループット）。**2 は 1 の前では無意味、4 は 2 の前では化粧**。
-1 本だけ出すなら 1 — 設計を反証できるのはそれだけ。
-
 **現状** — bootstrap 段階の vertical slice。既定の agent runtime は fixture 駆動の fake、実 runtime は
 「実 `git` を起動し、限定されたローカル repo のブランチにコミットする」1 provider のみ。
 セキュリティ主張は狭いが非ゼロ（OS/kernel サンドボックスではなく、プロダクト境界での code-level 封じ込め）。
 汎用シェル実行・認証境界は対象外。
+
+**この先の順序**: [CRITICAL-PATH.md](CRITICAL-PATH.md)。
