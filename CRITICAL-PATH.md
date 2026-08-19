@@ -11,7 +11,20 @@ Everything in the README is either implemented or explicitly scoped out. What st
 current bootstrap slice and something real is a short, **ordered** chain — each link is blocked by
 the one before it.
 
-## 1. One real agent through the facade ← *we are here*
+## 0. The implementation itself ← *we are here*
+
+There is no codebase. The TypeScript slice proved the semantics and is not the thing being built;
+the real implementation is Rust, and it has not started. Every step below presupposes a
+`RuntimeFacade`, a store, a daemon and a compiler that currently exist only as a proven design.
+
+The slice is not wasted — it is an **executable specification**. Its 42 tests describe the behaviour
+the Rust implementation has to reproduce, and `facade_contract` in particular is the acceptance test
+for step 1. Port the tests first, then make them pass.
+
+**Done when:** the Rust build passes a port of the slice's test suite, and `eng demo` reproduces the
+trace in the README.
+
+## 1. One real agent through the facade
 
 The default runtime is a fake. Until a real coding agent runs a real step through `dispatch()` and
 has its outputs contract-checked, every guarantee in the README is a guarantee about a simulation.
@@ -78,7 +91,7 @@ and doing it early only multiplies whatever 1 and 2 get wrong.
 prettier. **3 bounds 1** rather than following it, because the scope of what a real agent may do
 decides what "real" means in step 1.
 
-If exactly one of these ships, it is **1**. It is the only one that can still falsify the design.
+If exactly one of these ships, it is **1** (after 0, which is not optional). It is the only one that can still falsify the design.
 
 ---
 
@@ -86,7 +99,15 @@ If exactly one of these ships, it is **1**. It is the only one that can still fa
 
 README が「何であるか・すでに何をするか」で、こちらは「まだ何をしないか・どの順で変わるか」。
 
-1. **実エージェントを facade の向こうに1本通す**（現在地）
+0. **実装そのもの**（現在地）
+   コードベースが無い。TypeScript のスライスは意味論の証明であって、作る対象ではない。本実装は Rust で、未着手。
+   以下の全ステップは `RuntimeFacade`・store・daemon・compiler の存在を前提にしているが、それらは現在
+   「証明済みの設計」としてしか存在しない。ただしスライスは無駄ではなく**実行可能な仕様書**で、
+   42 個のテストが Rust 実装の再現すべき挙動を記述している。特に `facade_contract` はステップ1の受入テスト。
+   **テストから移植し、それを通す**のが順序。
+   *完了条件*: Rust ビルドがスライスのテスト移植版を通し、`eng demo` が README のトレースを再現すること。
+
+1. **実エージェントを facade の向こうに1本通す**
    難所は spawn ではなく**出力境界**。成果物はエージェントの申告リストではなく、プロダクト自身が観測しなければならない。
    自分の出力を自分で名乗れる相手は、作っていない出力も名乗れる。そこを許すと、契約検査は元の痛みにそのまま戻る。
    *完了条件*: 実エージェントが step を完了できること、かつ「完了したと主張したが実際はしていない」step を、
@@ -112,4 +133,4 @@ README が「何であるか・すでに何をするか」で、こちらは「�
 
 **順序の理由**: 2 は 1 の前では fixture を検証するだけ。4 は 2 の前では形骸化した承認を綺麗にするだけ。
 3 は 1 に続くのではなく 1 を**縛る**（実エージェントに何を許すかが「実」の意味を決めるため）。
-1本だけ出すなら **1** — 設計を反証できるのはそれだけ。
+1本だけ出すなら **1**（0 は選択肢ではない）— 設計を反証できるのはそれだけ。

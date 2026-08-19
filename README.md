@@ -6,7 +6,9 @@ Coding agents are good at producing changes. They are not good at being **accoun
 things answerable at any moment: what was approved, what is actually running, what authority it
 holds, and whether it really did what it promised.
 
-Terminal-first. TypeScript on Node ≥ 22.5. Zero dependencies, no build step.
+Terminal-first. **Nothing here is shipped.** The semantics below were proved end to end by a
+throwaway TypeScript slice; the implementation is being rebuilt in Rust, and that work has not
+started. Read this as a design with a working proof behind it, not as software you can install.
 
 ---
 
@@ -143,8 +145,8 @@ not.
 
 ## What a run looks like
 
-The walkthrough below is the fixture-driven demo, verified end to end. The implementation lives in
-a private repository for now; this repo is the public overview.
+The walkthrough below was run end to end against the TypeScript slice, before the Rust decision.
+It is a record of something that happened, not a command you can run today.
 
 ```text
 $ eng demo fixtures/async-payment-retry.json
@@ -173,7 +175,10 @@ sat in `WAITING` on a MERGE gate rather than finishing itself.
 
 ## Honest scope
 
-This is a **bootstrap-stage vertical slice** (2026-08), not a product. Specifically:
+**There is no implementation right now.** A TypeScript vertical slice (2026-08) proved the
+semantics and produced the trace above; the decision to build the real thing in Rust means the
+codebase starts from zero. Everything below describes what the slice demonstrated, not what you
+can run today:
 
 * The default agent runtime is a **fake, fixture-driven runtime** behind the runtime boundary. It
   exists to prove the semantics — approval binding, contract checking, gates, adaptation, recovery —
@@ -186,7 +191,8 @@ This is a **bootstrap-stage vertical slice** (2026-08), not a product. Specifica
   are out of scope.
 * `eng` is **not** a coding agent, an IDE, or a model wrapper. It makes no model calls of its own.
 
-If a claim isn't in this list, assume it isn't implemented yet.
+If a claim isn't in this list, assume it isn't implemented yet — and assume everything in it
+has to be built a second time, in Rust, before any of it is real again.
 
 What is missing, and in what order it has to change:
 **[CRITICAL-PATH.md](CRITICAL-PATH.md)**.
@@ -222,8 +228,10 @@ What is missing, and in what order it has to change:
 決めていない判断を実行で追い越せない。競合・先行事例の調査は plan が積むタスクで、コンパイラが機械的に待つ。
 成果は「厳密な plan revision に pin された run の登録済み出力」として戻るので、判断とその根拠が離れない。
 
-**現状** — bootstrap 段階の vertical slice。既定の agent runtime は fixture 駆動の fake、実 runtime は
-「実 `git` を起動し、限定されたローカル repo のブランチにコミットする」1 provider のみ。
+**現状 — 実装は現在ゼロ。** TypeScript の vertical slice（2026-08）が上記の意味論を end-to-end で証明したが、
+本実装を Rust で作る判断をしたため、コードベースはゼロから始まる。以下はスライスが示したことであって、
+今動かせるものではない。スライスでの既定 agent runtime は fixture 駆動の fake、実 runtime は
+「実 `git` を起動し、限定されたローカル repo のブランチにコミットする」1 provider のみだった。
 セキュリティ主張は狭いが非ゼロ（OS/kernel サンドボックスではなく、プロダクト境界での code-level 封じ込め）。
 汎用シェル実行・認証境界は対象外。
 
