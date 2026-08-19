@@ -111,6 +111,34 @@ not fail and does not proceed — it opens a gate, waits, and re-dispatches only
 `eng attention` answers the only question that matters when you come back to the terminal:
 **what needs me?**
 
+### Seeing the system, not reconstructing it from logs
+
+A wall of state transitions is not understanding. The engineering model, the workflow DAG and the
+state machines are meant to be **looked at** — that is the `Rich Visual` plane in the architecture,
+and it is designed, not built (see `CRITICAL-PATH.md`).
+
+What *is* built is the property that would make such a view worth trusting: **the diagrams are
+checked against the code.** `docs/diagrams.md` carries the WorkflowRun / StepRun / HumanGate state
+machines, and a test asserts that every state in the implementation appears in the diagram that
+claims to describe it. Add a state to the code and not to the picture, and the test fails. A diagram
+that can silently fall behind the system is worse than no diagram, because people believe it.
+
+### Unknowns are scheduled, not handled "before the real work"
+
+Research is not a phase that happens before planning. It is a task type *inside* the plan
+(`RESEARCH`, `SPIKE`), and an unresolved question is a first-class object carrying a blocking class.
+
+* A plan holding a `BLOCKING` open question **refuses to compile**. You cannot execute your way past
+  a decision you have not made. Surveying prior art and competing approaches for a design choice is
+  work the plan schedules and the compiler waits on — mechanically, not as a reminder someone reads.
+* Findings come back as **registered outputs on a run that is pinned to the exact plan revision**, so
+  the decision and the evidence behind it stay attached to each other instead of drifting into a
+  chat log.
+
+The agent that actually performs that investigation is step 1 of `CRITICAL-PATH.md`: today the task
+type, the blocking question and the compile-time refusal exist; the capability that fills them does
+not.
+
 ---
 
 ## What a run looks like
@@ -185,6 +213,14 @@ What is missing, and in what order it has to change:
    最終ガードは「これから触るブランチと書き込みパス」から判定し、自己申告を信用しない。
 4. **状態は永続、不明は不明のまま**。daemon が状態を持ち CLI は持たない。Ctrl-C しても run は生きる。
    再起動時の実行中 step は `UNKNOWN_OUTCOME` として**自動再試行しない**。human gate に時間切れ承認は存在しない。
+
+**見えること・調べること** — 状態機械の図（`docs/diagrams.md`）は**テストでコードと照合**される。
+実装にある状態が図に無ければテストが落ちるので、図が黙って実装から遅れることがない
+（黙って古くなる図は、無い図より悪い。人は信じてしまうため）。図を視覚として見る `Rich Visual` 面は設計済み・未実装。
+調査は「本番前の下調べ」ではなく plan の中の task type（`RESEARCH`/`SPIKE`）で、未解決の問いは blocking class を持つ
+第一級オブジェクト。**`BLOCKING` な open question を抱えた plan はコンパイルを拒否される** —
+決めていない判断を実行で追い越せない。競合・先行事例の調査は plan が積むタスクで、コンパイラが機械的に待つ。
+成果は「厳密な plan revision に pin された run の登録済み出力」として戻るので、判断とその根拠が離れない。
 
 **現状** — bootstrap 段階の vertical slice。既定の agent runtime は fixture 駆動の fake、実 runtime は
 「実 `git` を起動し、限定されたローカル repo のブランチにコミットする」1 provider のみ。

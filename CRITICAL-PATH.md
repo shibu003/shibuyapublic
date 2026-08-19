@@ -53,6 +53,11 @@ not deferrable past 1.
 A human approving a MERGE gate today sees a gate id, not a diff. Approval without evidence in front
 of it is a rubber stamp — which re-creates the original problem one layer up, at the human.
 
+This is also the first real slice of the `Rich Visual` plane: the workflow DAG, the engineering
+model and the state machines are supposed to be *seen*, not reassembled from an event stream. None
+of that is built. Gates are where it has to start, because a gate is the one moment the human is
+already stopped and looking.
+
 **Done when:** a gate renders the change set and verification results it is holding, in the terminal,
 before the decision is taken.
 
@@ -99,6 +104,8 @@ README が「何であるか・すでに何をするか」で、こちらは「�
 
 4. **gate が中身を見せる**
    今は gate id しか見えない。差分の見えない承認は形骸化で、元の問題が人間の層で再発する。
+   これは `Rich Visual` 面（workflow DAG・エンジニアリングモデル・状態機械を「見る」層。未実装）の最初の一切れでもある。
+   gate から始めるべき理由は、そこが人間が既に立ち止まって見ている唯一の瞬間だから。
    *完了条件*: gate が、保留している change set と検証結果を、決定の前にターミナル上で描画すること。
 
 **経路外**: 並列実行。正しさではなくスループットの話で、1 と 2 の誤りを早期に増幅するだけ。
